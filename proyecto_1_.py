@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 def BubbleSort_objeto(
     arr, Atributo
 ):  # Bubble sort original de https://www.geeksforgeeks.org/dsa/bubble-sort-algorithm/, modificado para trabajar con atributos de objetos
@@ -19,7 +21,7 @@ def BubbleSort_objeto(
 
 
 def BubbleSort_lista_aux(
-    arr,
+    arr, t
 ):  # Bubble sort original de https://www.geeksforgeeks.org/dsa/bubble-sort-algorithm/, modificado para trabajar con lista auxiliar
     n = len(arr)
 
@@ -30,25 +32,34 @@ def BubbleSort_lista_aux(
         # Last i elements are already in place
         for l in range(0, n - i - 1):
             lmas1 = l + 1
-            if arr[l][2] < arr[lmas1][2]:
-                arr[l], arr[lmas1] = arr[lmas1], arr[l]
-                swapped = True
+            if (t == 1):
+                if arr[l][2] > arr[lmas1][2]:
+                    arr[l], arr[lmas1] = arr[lmas1], arr[l]
+                    swapped = True
+            else:
+                if arr[l][2] < arr[lmas1][2]:
+                    arr[l], arr[lmas1] = arr[lmas1], arr[l]
+                    swapped = True  
         if swapped == False:
             break
 
 
-class Deportista:  # Clase abstracta principal
+class Deportista(ABC):  # Clase abstracta principal
     def __init__(self, id, nombre, edad, deporte):
+        if(edad < 18):
+            print(f"profavor ingrese una edad correcta para {nombre}, no se ingresara nada\n")
+            return -1
         self._id = id
         self._nombre = nombre
         self._edad = edad
         self._deporte = deporte
         self._puntaje = []
         self._cantidad_de_competencias = []
-        self._registro = None
+        self._registro = None   # Esto es para poder acceder a su objeto registro
 
+    @abstractmethod
     def obtener_informacion_basica(self):
-        return f"id: {self._id}\nnombre: {self._nombre}\nedad: {self._edad}\ndeporte: {self._deporte}\npuntaje: {self._puntaje}\ncantidad_de_competencias: {len(self._cantidad_de_competencias)}\n"
+        pass
 
     def registrom(
         self, lista
@@ -64,22 +75,28 @@ class Deportista:  # Clase abstracta principal
     def reiniciar_puntaje(
         self,
     ):  # Este metodo ademas de borra las competencias y puntaje del deportista reajusta el ranking a consecuencia de lo anterior
-        self._cantidad_de_competencias.clear()
-        self._puntaje.clear()
-        if len(self._registro._deportistas) > 1:
-            BubbleSort_objeto(self._registro._deportistas, "_puntaje")
-            if self._deporte == "Tenis":
-                self._registro.ordenar_ranking_atp()
+        try:
+            self._cantidad_de_competencias.clear()
+            self._puntaje.clear()
+            if len(self._registro._deportistas) > 1:
+                BubbleSort_objeto(self._registro._deportistas, "_puntaje")
+                if self._deporte == "Tenis":
+                    self._registro.ordenar_ranking_atp()
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def actualizar_puntaje_y_competencias(
         self, nuevo_puntaje, competencia
     ):  # Este metodo ademas de agregar a las competencias y al puntaje del deportista reajusta el ranking a consecuencia de lo anterior
-        self._puntaje.append(nuevo_puntaje)
-        self._cantidad_de_competencias.append(competencia)
-        if self._registro != 0:
-            BubbleSort_objeto(self._registro._deportistas, "_puntaje")
-            if self._deporte == "Tenis":
-                self._registro.ordenar_ranking_atp()
+        try:
+            self._puntaje.append(nuevo_puntaje)
+            self._cantidad_de_competencias.append(competencia)
+            if self._registro != 0:
+                BubbleSort_objeto(self._registro._deportistas, "_puntaje")
+                if self._deporte == "Tenis":
+                    self._registro.ordenar_ranking_atp()
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def __str__(self):
         return f"id: {self._id}\nnombre: {self._nombre}\nedad: {self._edad}\ndeporte: {self._deporte}\npuntaje: {self._puntaje}\ncantidad_de_competencias: {len(self._cantidad_de_competencias)}\n"
@@ -89,13 +106,17 @@ class Registro:  # Clase registro, sirve para llevar un registro, y ademas la ut
     def __init__(self):
         self._deportistas = []
         self._atp = []  # Lista hecha exclusivamente para el ranking de tenis
+        self._equipo = [] # la idea es guardar el nombre del equipo o dupla junto con su puntaje
 
     def añadir_deportista(self, deportista):
-        if deportista in self._deportistas:
-            print(f"Ya fue ingresado el deportista {deportista._nombre}\n")
-        else:
-            self._deportistas.append(deportista)
-            deportista.registrom(self)
+        try:
+            if deportista in self._deportistas:
+                print(f"Ya fue ingresado el deportista {deportista._nombre}\n")
+            else:
+                self._deportistas.append(deportista)
+                deportista.registrom(self)  # En esta parte le pasa el registro al deportista
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def mostrar_deportistas(self):
         BubbleSort_objeto(self._deportistas, "_puntaje")
@@ -113,12 +134,15 @@ class Registro:  # Clase registro, sirve para llevar un registro, y ademas la ut
         self.mostrar_n_mejores_deportistas(deporte, n)
 
     def mostrar_n_mejores_deportistas(self, deporte, n):
-        l = []
-        for i in self._deportistas:
-            if i._deporte == deporte:
-                l.append(i)
-        for m in range(n):
-            l[m].obtener_informacion_basica()
+        try:
+            l = []
+            for i in self._deportistas:
+                if i._deporte == deporte:
+                    l.append(i)
+            for m in range(n):
+                l[m].obtener_informacion_basica()
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def ordenar_ranking_atp(
         self,
@@ -129,7 +153,7 @@ class Registro:  # Clase registro, sirve para llevar un registro, y ademas la ut
             if i._deporte == "Tenis":
                 jugador = [i._id, i._nombre, i._ranking_atp]
                 self._atp.append(jugador)
-        BubbleSort_lista_aux(self._atp)
+        BubbleSort_lista_aux(self._atp,1)
 
     def mostrar_ranking_atp(
         self,
@@ -137,6 +161,25 @@ class Registro:  # Clase registro, sirve para llevar un registro, y ademas la ut
         for i in range(len(self._atp)):
             print(f"Nombre: {self._atp[i][1]}, ranking: {self._atp[i][2]}")
         print("\n")
+
+    def conservar_equipo(self, id):     # Este metodo fue hecho para poder guardar cada una de las duplasy equipos, y ademas guardar sus respectivos puntajes
+        try:                            # funciona de la siguiente manera
+            for i in self._deportistas: # busca al deportista
+                if (i._id == id):       #lo encuentra
+                    equipo_puntaje = [i._equipo, i._puntaje]    # crea esta lista con el nombre del equipo y el puntaje
+                    for l in self._equipo:  # busca en la lista de equipos
+                        if(equipo_puntaje[0] == l[0]):  # encuentra el equipo
+                            l[1][0] = l[1][0] + equipo_puntaje[1][0]    # le suma el puntaje del jugador
+                            return                      # termina
+                    self._equipo.append(equipo_puntaje)     # si no encuentra el equipo lo agrega
+                    return      #termina
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
+            
+    def mostrar_equipos_competencia(self):
+        print("Equipos y sus puntajes:\n")
+        for l in self._equipo:
+            print(f"{l}\n")
 
     def buscar_deportista(self, nombre):
         for i in self._deportistas:
@@ -161,37 +204,49 @@ class Competencia:  # Esta funcion almacena detalles del evento
         self.__registro = registro
 
     def inscribir_participante(self, deportista):
-        for d in self.__registro._deportistas:
-            if d._nombre == deportista._nombre:
-                if d._deporte == deportista._deporte:
-                    self.__participantes.append(deportista)
-                    return
-        print("El deportista no esta en el registro")
+        try:
+            for d in self.__registro._deportistas:
+                if d._nombre == deportista._nombre:
+                    if d._deporte == deportista._deporte:
+                        self.__participantes.append(deportista)
+                        return
+            print("El deportista no esta en el registro")
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def registrar_resultado(
         self, resultado
     ):  # En la primera parte de la funcion se verifica que no allan datos negativos y que el deportista ingresado este con el mismo id y nombre en el registro
-        for i in resultado.values():
-            if i["_puntaje"] < 0:
-                print(
-                    f"Deportista {i['nombre']} tiene datos negativos, no se ingresara nada"
-                )
-                return
-            m = 0
-            for l in self.__registro._deportistas:
-                if i["nombre"] == l._nombre and i["id"] == l._id:
-                    m = m + 1
-            if m == 0:
-                print(
-                    f"Deportista {i['nombre']} o tiene un id erroneo, no se registrara nada"
-                )
-                return
+        try:
+            for i in resultado.values():
+                if i["_puntaje"] < 0:
+                    print(
+                        f"Deportista {i['nombre']} tiene datos negativos, no se ingresara nada"
+                    )
+                    return
+                m = 0
+                for l in self.__registro._deportistas:
+                    if i["nombre"] == l._nombre and i["id"] == l._id:
+                        m = m + 1
+                if m == 0:
+                    print(
+                        f"Deportista {i['nombre']} o tiene un id erroneo, no se registrara nada"
+                    )
+                    return
 
-        for i in resultado.values():  # En la segunda parte de esta funcion se actualizan los puntajes, y se almacena el diccionario de resultados
+            for i in resultado.values():  # En la segunda parte de esta funcion se actualizan los puntajes, se almacena el diccionario de resultados, y ademas se guardan los equipos con sus punatjes
+                for l in self.__registro._deportistas:
+                    if i["nombre"] == l._nombre and i["id"] == l._id:   # este primer for es para encontrar al deportista
+                        l.actualizar_puntaje_y_competencias(i['_puntaje'], self)    # actualiza puntaje del deportista
+                        if (l._deporte == 'Futbol' or l._deporte == 'Tenis'):
+                            self.__registro.conservar_equipo(l._id)     # registra el equipo y su puntaje mediante avanza el for
             for l in self.__registro._deportistas:
-                if i["nombre"] == l._nombre and i["id"] == l._id:
-                    l.actualizar_puntaje_y_competencias(i["_puntaje"], self)
-
+                for i in self.__registro._equipo:       # por ultimo estos 2 for ayudan a buscar al jugador y su equipo para avizarle del puntaje de su equipo
+                    if ((l._deporte == 'Futbol' or l._deporte == 'Tenis') and (l._equipo == i[0])):
+                        l.actualizar_puntaje_equipo(i[1])
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
+            
         self.__resultados = resultado
 
     def mostrar_resultado(self):
@@ -202,17 +257,20 @@ class Competencia:  # Esta funcion almacena detalles del evento
     def mostrar_n_posiciones(
         self, n
     ):  # En esta funcion en su primera parte hace una lista sencilla  y se ordena
-        lista = []
-        jugador = []
-        for i in self.__resultados.values():
-            jugador = [i["id"], i["nombre"], i["_puntaje"]]
-            lista.append(jugador)
-        BubbleSort_lista_aux(lista)
-        print(
-            f"Mejores {n} deportistas de la competencia {self._nombre}:\n"
-        )  # En esta segunda parte se imprime la lista
-        for i in range(n):
-            print(f"Nombre: {lista[i][1]}, puntaje: {lista[i][2]}")
+        try:
+            lista = []
+            jugador = []
+            for i in self.__resultados.values():
+                jugador = [i["id"], i["nombre"], i["_puntaje"]]
+                lista.append(jugador)
+            BubbleSort_lista_aux(lista,0)
+            print(
+                f"Mejores {n} deportistas de la competencia {self._nombre}:\n"
+            )  # En esta segunda parte se imprime la lista
+            for i in range(n):
+                print(f"Nombre: {lista[i][1]}, puntaje: {lista[i][2]}")
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def __str__(self):
         return f"Competencia\nid: {self._id}\nNombre: {self._nombre}\nFecha: {self.__fecha}\nParticipantes: {self.__participantes}\nResultados: {self.__resultados}\nDeporte: {self._deporte}\nRegistro: {self.registro}"
@@ -221,10 +279,11 @@ class Competencia:  # Esta funcion almacena detalles del evento
 class Futbolista(Deportista):  # Esta funcion hereda de la Funcion Deportista
     def __init__(self, id, nombre, edad, equipo, posicion):
         super().__init__(id=id, nombre=nombre, edad=edad, deporte="Futbol")
-        self.__equipo = equipo
+        self._equipo = equipo
         self.__goles = 0
         self.__asistencias = 0
         self.__posicion = posicion
+        self._puntaje_equipo = 0
 
     def añadir_goles(self, goles):
         if goles < 1:
@@ -242,21 +301,36 @@ class Futbolista(Deportista):  # Esta funcion hereda de la Funcion Deportista
             self.__asistencias = self.__asistencias + asistencias
             print(f"Se agregaron {asistencias} asistencias")
 
+    def actualizar_puntaje_equipo(self,puntaje):
+        self._puntaje_equipo = puntaje
+
+    def mostrar_puntaje_equipo(self):
+        print(f"El puntaje del equipo {self._equipo} es: {self._puntaje_equipo}" )
+
     def calcular_rendimiento(self):
-        print(
-            f"El redimiento del jugador: {self._nombre}, es: {(self.__goles * 2 + self.__asistencias * 0.7) / len(self.cantidad_de_competencias)}"
-        )
+        try:
+            print(
+                f"El redimiento del jugador: {self._nombre}, es: {(self.__goles * 2 + self.__asistencias * 0.7) / len(self.cantidad_de_competencias)}"
+            )
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def cambiar_de_equipo(
         self, nuevo_equipo
     ):  # En esta funcion se reinicia el puntaje y competencias del deportista y se le cambia de equipo
-        super().reiniciar_puntaje()
-        self.__equipo = nuevo_equipo
-        print(f"El jugador {self._nombre} se cambio al equipo: {self.__equipo}")
+        try:
+            super().reiniciar_puntaje()
+            self._equipo = nuevo_equipo
+            for i in self._registro._equipo:    # en esta parte actualizo el puntaje de su equipo por su actual equipo
+                if (i[0] == self._equipo):
+                    self.actualizar_puntaje_equipo(i[1][0])
+            print(f"El jugador {self._nombre} se cambio al equipo: {self._equipo}")
+        except Exception as e:
+            print(f"Ocurrio el siguiente error {e}\n\n")
 
     def obtener_informacion_basica(self):
         print(
-            f"{super().obtener_informacion_basica()}equipo: {self.__equipo}\ngoles: {self.__goles}\nasistencias: {self.__asistencias}\nposicion: {self.__posicion}\n"
+            f"{super().__str__()}equipo: {self._equipo}\ngoles: {self.__goles}\nasistencias: {self.__asistencias}\nposicion: {self.__posicion}\n"
         )
 
     def __str__(self):
@@ -264,10 +338,16 @@ class Futbolista(Deportista):  # Esta funcion hereda de la Funcion Deportista
 
 
 class Tenista(Deportista):  # Esta funcion hereda de la Funcion Deportista
-    def __init__(self, id, nombre, edad, pareja, ranking_atp):
+    def __init__(self, id, nombre, edad, pareja, posicion, ranking_atp):
         super().__init__(id=id, nombre=nombre, edad=edad, deporte="Tenis")
         self.__pareja = pareja
         self._ranking_atp = ranking_atp
+        self.__posicion = posicion  # este atributo sirve para escojer el nombre de la dupla de correcta
+        self._puntaje_equipo = 0
+        if (self.__posicion == 1):
+            self._equipo = f"{self._nombre} y {self.__pareja}"
+        else:
+            self._equipo = f"{self.__pareja} y {self._nombre}"
 
     def actualizar_ranking(self, nueva_posicion):
         if nueva_posicion < 1:
@@ -285,12 +365,19 @@ class Tenista(Deportista):  # Esta funcion hereda de la Funcion Deportista
     ):  # En esta funcion se reinicia el puntaje y competencias del deportista y se le cambia la pareja
         super().reiniciar_puntaje()
         self.__pareja = nueva_pareja
+        if (self.__posicion == 1):
+            self._equipo = f"{self._nombre} y {nueva_pareja}"
+        else:
+            self._equipo = f"{nueva_pareja} y {self._nombre}"
         print(f"Se cambio la pareja {nueva_pareja}\n")
 
     def obtener_informacion_basica(self):
         print(
-            f"{super().obtener_informacion_basica()}pareja: {self.__pareja}\nranking_atp: {self._ranking_atp}\n"
+            f"{super().__str__()}pareja: {self.__pareja}\nequipo: {self._equipo}\npuntaje equipo: {self._puntaje_equipo}\nranking_atp: {self._ranking_atp}\n"
         )
+
+    def actualizar_puntaje_equipo(self,puntaje):
+        self._puntaje_equipo = puntaje
 
     def __str__(self):
         return "Utilize el metodo obtener_informacion_basica para ver la informacion del deportista\n"
@@ -312,7 +399,7 @@ class Atleta(Deportista):  # Esta funcion hereda de la Funcion Deportista
 
     def obtener_informacion_basica(self):
         print(
-            f"{super().obtener_informacion_basica()}disiplina: {self.__disciplina}\nmejores tiempos: {self.mejores_tiempos}\n"
+            f"{super().__str__()}disiplina: {self.__disciplina}\nmejores tiempos: {self.mejores_tiempos}\n"
         )
 
     def __str__(self):
@@ -324,100 +411,100 @@ class Atleta(Deportista):  # Esta funcion hereda de la Funcion Deportista
 # primero 22 futbolistas 11 por equipo
 
 futobolista_1 = Futbolista(
-    id=1, nombre="Alejandro", edad="22", equipo="Los_castores", posicion="Portero"
+    id=1, nombre="Alejandro", edad=18, equipo="Los_castores", posicion="Portero"
 )
 futobolista_2 = Futbolista(
-    id=2, nombre="Juan", edad="23", equipo="Los_castores", posicion="Linea de defensa"
+    id=2, nombre="Juan", edad=23, equipo="Los_castores", posicion="Linea de defensa"
 )
 futobolista_3 = Futbolista(
-    id=3, nombre="Pepe", edad="20", equipo="Los_castores", posicion="Linea de defensa"
+    id=3, nombre="Pepe", edad=20, equipo="Los_castores", posicion="Linea de defensa"
 )
 futobolista_4 = Futbolista(
-    id=4, nombre="Pedro", edad="30", equipo="Los_castores", posicion="Linea de defensa"
+    id=4, nombre="Pedro", edad=30, equipo="Los_castores", posicion="Linea de defensa"
 )
 futobolista_5 = Futbolista(
-    id=5, nombre="Peter", edad="32", equipo="Los_castores", posicion="Linea de defensa"
+    id=5, nombre="Peter", edad=32, equipo="Los_castores", posicion="Linea de defensa"
 )
 futobolista_6 = Futbolista(
-    id=6, nombre="Pablo", edad="30", equipo="Los_castores", posicion="Medio centro"
+    id=6, nombre="Pablo", edad=30, equipo="Los_castores", posicion="Medio centro"
 )
 futobolista_7 = Futbolista(
-    id=7, nombre="Jose", edad="40", equipo="Los_castores", posicion="Medio centro"
+    id=7, nombre="Jose", edad=40, equipo="Los_castores", posicion="Medio centro"
 )
 futobolista_8 = Futbolista(
-    id=8, nombre="Carlos", edad="60", equipo="Los_castores", posicion="Medio centro"
+    id=8, nombre="Carlos", edad=60, equipo="Los_castores", posicion="Medio centro"
 )
 futobolista_9 = Futbolista(
-    id=9, nombre="Raul", edad="45", equipo="Los_castores", posicion="Delantero"
+    id=9, nombre="Raul", edad=45, equipo="Los_castores", posicion="Delantero"
 )
 futobolista_10 = Futbolista(
-    id=10, nombre="Leonel", edad="40", equipo="Los_castores", posicion="Delantero"
+    id=10, nombre="Leonel", edad=40, equipo="Los_castores", posicion="Delantero"
 )
 futobolista_11 = Futbolista(
-    id=11, nombre="Cristiano", edad="40", equipo="Los_castores", posicion="Delantero"
+    id=11, nombre="Cristiano", edad=40, equipo="Los_castores", posicion="Delantero"
 )
 futobolista_12 = Futbolista(
-    id=12, nombre="Jhon", edad="28", equipo="Los_anti_castores", posicion="Portero"
+    id=12, nombre="Jhon", edad=28, equipo="Los_anti_castores", posicion="Portero"
 )
 futobolista_13 = Futbolista(
     id=13,
     nombre="Mike",
-    edad="35",
+    edad=35,
     equipo="Los_anti_castores",
     posicion="Linea de defensa",
 )
 futobolista_14 = Futbolista(
     id=14,
     nombre="James",
-    edad="40",
+    edad=40,
     equipo="Los_anti_castores",
     posicion="Linea de defensa",
 )
 futobolista_15 = Futbolista(
     id=15,
     nombre="Sawao",
-    edad="40",
+    edad=40,
     equipo="Los_anti_castores",
     posicion="Linea de defensa",
 )
 futobolista_16 = Futbolista(
     id=16,
     nombre="Luffy",
-    edad="20",
+    edad=20,
     equipo="Los_anti_castores",
     posicion="Linea de defensa",
 )
 futobolista_17 = Futbolista(
-    id=17, nombre="Zoro", edad="24", equipo="Los_anti_castores", posicion="Medio centro"
+    id=17, nombre="Zoro", edad=24, equipo="Los_anti_castores", posicion="Medio centro"
 )
 futobolista_18 = Futbolista(
     id=18,
     nombre="Bartolomeo",
-    edad="56",
+    edad=56,
     equipo="Los_anti_castores",
     posicion="Medio centro",
 )
 futobolista_19 = Futbolista(
     id=19,
     nombre="Antonio",
-    edad="20",
+    edad=20,
     equipo="Los_anti_castores",
     posicion="Medio centro",
 )
 futobolista_20 = Futbolista(
     id=20,
     nombre="Fernando",
-    edad="20",
+    edad=20,
     equipo="Los_anti_castores",
     posicion="Delantero",
 )
 futobolista_21 = Futbolista(
-    id=21, nombre="Julian", edad="30", equipo="Los_anti_castores", posicion="Delantero"
+    id=21, nombre="Julian", edad=30, equipo="Los_anti_castores", posicion="Delantero"
 )
 futobolista_22 = Futbolista(
     id=22,
     nombre="Cleveland",
-    edad="30",
+    edad=30,
     equipo="Los_anti_castores",
     posicion="Delantero",
 )
@@ -425,23 +512,23 @@ futobolista_22 = Futbolista(
 # 5 tenistas 8 parejas de las ATP Finals
 
 tenista_1 = Tenista(
-    id=23, nombre="Cleveland_Jr", edad="18", pareja="Quacmire", ranking_atp=1
+    id=23, nombre="Cleveland Jr", edad=18, pareja="Quacmire", posicion=1,  ranking_atp=1
 )
 tenista_2 = Tenista(
-    id=24, nombre="Quacmire", edad="30", pareja="Cleveland Jr", ranking_atp=3
+    id=24, nombre="Quacmire", edad=30, pareja="Cleveland Jr", posicion=2, ranking_atp=1
 )
-tenista_3 = Tenista(id=25, nombre="Joe", edad="30", pareja="Stewie", ranking_atp=5)
-tenista_4 = Tenista(id=26, nombre="Stewie", edad="18", pareja="Joe", ranking_atp=6)
-tenista_5 = Tenista(id=27, nombre="Brian", edad="40", pareja="Chris", ranking_atp=4)
-tenista_6 = Tenista(id=27, nombre="Chris", edad="40", pareja="Brian", ranking_atp=2)
+tenista_3 = Tenista(id=25, nombre="Joe", edad=30, pareja="Stewie", posicion=1, ranking_atp=3)
+tenista_4 = Tenista(id=26, nombre="Stewie", edad=18, pareja="Joe", posicion=2, ranking_atp=3)
+tenista_5 = Tenista(id=27, nombre="Brian", edad=40, pareja="Chris", posicion=1, ranking_atp=2)
+tenista_6 = Tenista(id=28, nombre="Chris", edad=40, pareja="Brian", posicion=2, ranking_atp=2)
 
 # 5 atetlas de carrera 100 metros planos
 
-atleta_1 = Atleta(id=39, nombre="Peach", edad="30", disciplina="100 metros planos")
-atleta_2 = Atleta(id=40, nombre="Bowser", edad="30", disciplina="100 metros planos")
-atleta_3 = Atleta(id=41, nombre="Bowser jr", edad="18", disciplina="100 metros planos")
-atleta_4 = Atleta(id=42, nombre="Giorno", edad="18", disciplina="100 metros planos")
-atleta_5 = Atleta(id=43, nombre="German", edad="30", disciplina="100 metros planos")
+atleta_1 = Atleta(id=39, nombre="Peach", edad=30, disciplina="100 metros planos")
+atleta_2 = Atleta(id=40, nombre="Bowser", edad=30, disciplina="100 metros planos")
+atleta_3 = Atleta(id=41, nombre="Bowser jr", edad=18, disciplina="100 metros planos")
+atleta_4 = Atleta(id=42, nombre="Giorno", edad=18, disciplina="100 metros planos")
+atleta_5 = Atleta(id=43, nombre="German", edad=30, disciplina="100 metros planos")
 
 
 # registro de registro
@@ -575,11 +662,12 @@ resultado_futbol = {
 # resultados tenis atletismo
 
 resultado_tenis_atletimso = {
-    "tenista_1": {"id": 23, "nombre": "Cleveland_Jr", "_puntaje": 10111},
+    "tenista_1": {"id": 23, "nombre": "Cleveland Jr", "_puntaje": 10111},
     "tenista_2": {"id": 24, "nombre": "Quacmire", "_puntaje": 10121},
     "tenista_3": {"id": 25, "nombre": "Joe", "_puntaje": 10311},
     "tenista_4": {"id": 26, "nombre": "Stewie", "_puntaje": 14011},
     "tenista_5": {"id": 27, "nombre": "Brian", "_puntaje": 51011},
+    "tenista_6": {"id": 28, "nombre": "Chris", "_puntaje": 51411},
     "atleta_1": {"id": 39, "nombre": "Peach", "_puntaje": 11116},
     "atleta_2": {"id": 40, "nombre": "Bowser", "_puntaje": 11126},
     "atleta_3": {"id": 41, "nombre": "Bowser jr", "_puntaje": 13016},
@@ -629,6 +717,16 @@ lista_de_deportes_varios.mostrar_ranking_atp()
 
 print("\n")
 
+print("Continuo con mostara equipos competencia\n")
+
+lista_futbol.mostrar_equipos_competencia()
+
+print("\n")
+
+lista_de_deportes_varios.mostrar_equipos_competencia()
+
+print("\n")
+
 # ahora pruebo metodos de la clase competencia
 
 print("Ahora pruebo los metodos de competencia que faltan probar\n")
@@ -639,7 +737,7 @@ competencia_futbol.mostrar_resultado()
 print("\n")
 print("Continuo con mostrar n posiciones\n")
 
-comparacion_atletismo_tenis.mostrar_n_posiciones(7)
+comparacion_atletismo_tenis.mostrar_n_posiciones(6)
 
 print("\n")
 
@@ -679,7 +777,12 @@ futobolista_1.añadir_asistencias(-3)
 print("\n")
 print("Continuo con cambio de equipo\n")
 
-futobolista_1.cambiar_de_equipo("los_anti_castores")
+futobolista_1.cambiar_de_equipo("Los_anti_castores")
+
+print("\n")
+print("Continuo con mostrar puntaje equipo\n")
+
+futobolista_1.mostrar_puntaje_equipo()
 
 print("\n")
 print("Continuo con obtener informacion basica\n")
